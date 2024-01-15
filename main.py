@@ -1,9 +1,8 @@
 import discord
-import os
 
 
 def main():
-    bot = discord.Bot(proxy="http://127.0.0.1:10809", intents=discord.Intents.all())
+    bot = discord.Bot(proxy="http://127.0.0.1:7890", intents=discord.Intents.all())
 
     @bot.event
     async def on_ready():
