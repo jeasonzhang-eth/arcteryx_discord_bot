@@ -8,7 +8,7 @@ payload = json.dumps({
    "query": "query gqlGetProductInventoryBySkus($productSkus: [String!]) { products(filter: { sku: { in: $productSkus } }, pageSize: 500) { items { name sku ...on ConfigurableProduct { variants { product { sku quantity_available } } } } } }",
    "variables": {
       "productSkus": [
-         "X000007319"
+         "X000007491"
       ]
    }
 })
