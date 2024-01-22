@@ -6,8 +6,6 @@
 2. 上一步中，我们拿到了所有product的link。第二步就是遍历所有link，获取单个product的详细信息。包括该product有几个颜色，几个尺码，对应颜色尺码的product的库存。variant代表子型号，举个例子，某件夹克有5个颜色，每个颜色有5个尺码。那么这个夹克有5*5=25个子型号。红色s码是一个子型号，黄色xl码也是一个子型号(get_next_data.py)。这一步非常耗时，每个product耗时3秒左右，如果400个product就是1200秒，所以适合日更。
 3. 经过上面两步后，我们已经获取到了arcteryx网站的所有商品、所有子型号的库存。但是product的库存是时刻在发生变化的。（get_next_data.py）这个文件虽然也可以获取到库存，但是速度太慢了。所以我找了一个新方法来快速获取库存，此方法主要用于针对客户请求。（get_price.py）
 
-
-
 redis数据库设计
 
 1. product的link-sku映射表
@@ -36,7 +34,7 @@ link_sku_mapping
 | link          | string             | 该商品的链接                                                                                         |
 | slug          | string             | 该商品的名称                                                                                         |
 | market        | string             | 该商品所属的市场                                                                                     |
-| variants      | json序列化后的列表 | 该商品所拥有的子型号的具体信息,子型号的数量等于颜色数量*尺码数量，比如3种颜色5个尺码，就是15个子型号 |
+| variants_list | json序列化后的列表 | 该商品所拥有的子型号的具体信息,子型号的数量等于颜色数量*尺码数量，比如3种颜色5个尺码，就是15个子型号 |
 | color_mapping | json序列化后的字典 | 该商品的颜色-编号映射表                                                                              |
 | size_mapping  | json序列化后的字典 | 该商品的尺寸-编号映射表                                                                              |
 | last_update   | 时间字符串         | 该数据最后更新时间                                                                                   |
@@ -121,14 +119,41 @@ X000004670
 }
 ```
 
-
-
-
-
-
-
-
-
-
-
 part1：每天自动扫描商品信息，比对
+
+
+
+
+### bot自动管理
+
+本项目使用一个linux脚本来对机器人进行管理，bot_manager.sh
+
+使用以下命令赋予脚本执行权限：
+
+1. ```bash
+   chmod +x bot_manager.sh
+   ```
+
+### 使用说明
+
+- **启动机器人：**
+
+  ```bash
+  ./bot_manager.sh start
+  ```
+- **关闭机器人：**
+
+  ```bash
+  ./bot_manager.sh stop
+  ```
+- **重启机器人：**
+
+  ```bash
+  ./bot_manager.sh restart
+  ```
+
+### 注意事项
+
+1. 请确保脚本和 `bot.py` 文件在相同的目录下。
+2. 请确保已正确安装并配置 Conda，并且 `conda` 命令位于系统的 `PATH` 中。
+3. 请确保 Conda 环境的名称正确，可以在脚本中修改 `CONDA_ENV` 变量。

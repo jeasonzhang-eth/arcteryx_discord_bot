@@ -75,6 +75,27 @@ class RedisHandler:
             redis_conn.hdel(hash_name, field)
 
     @handle_redis_errors
+    def hgetall(self, hash_name):
+        redis_conn = self._get_connection()
+        if redis_conn:
+            result = redis_conn.hgetall(hash_name)
+            return result
+            # return {k.decode('utf-8'): v.decode('utf-8') for k, v in result.items()} if result else None
+
+    @handle_redis_errors
+    def hmget(self, hash_name, fields):
+        redis_conn = self._get_connection()
+        if redis_conn:
+            result = redis_conn.hmget(hash_name, fields)
+            return [item.decode('utf-8') if item else None for item in result] if result else None
+
+    @handle_redis_errors
+    def hmset(self, hash_name, mapping):
+        redis_conn = self._get_connection()
+        if redis_conn:
+            redis_conn.hmset(hash_name, mapping)
+
+    @handle_redis_errors
     def push_to_list(self, list_name, value):
         redis_conn = self._get_connection()
         if redis_conn:
@@ -139,6 +160,17 @@ if __name__ == "__main__":
 
     # 删除哈希字段
     redis_handler.delete_hash_field('hash_name', 'field1')
+
+    # 操作哈希 - 获取全部字段值
+    hash_all_result = redis_handler.hgetall('hash_name')
+    print(f"All Hash values: {hash_all_result}")
+
+    # 操作哈希 - 批量获取字段值
+    hash_multi_result = redis_handler.hmget('hash_name', ['field1', 'field2'])
+    print(f"Multi Hash values: {hash_multi_result}")
+
+    # 操作哈希 - 批量设置字段值
+    redis_handler.hmset('hash_name', {'field1': 'value1', 'field2': 'value2'})
 
     # 操作列表
     redis_handler.push_to_list('list_name', 'list_value1')
