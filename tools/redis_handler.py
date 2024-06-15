@@ -19,23 +19,26 @@ def handle_redis_errors(func):
 class RedisHandler:
     _instance = None
 
-    def __new__(cls, host='localhost', port=6379, db=0, max_connections=10):
+    def __new__(cls, host, port, db, max_connections, password):
         if not cls._instance:
             cls._instance = super(RedisHandler, cls).__new__(cls)
             # 创建 Redis 连接池
             cls._instance.connection_pool = ConnectionPool(
-                host=host, port=port, db=db, max_connections=max_connections
+                host=host, port=port, db=db,
+                password="Jeason52",
+                max_connections=max_connections,
+                decode_responses=True
             )
         return cls._instance
 
-    def __init__(self, host='localhost', port=6379, db=0, max_connections=10):
-        pass
+    # def __init__(self, host, port, db, max_connections, password):
+    #     pass
 
     def _get_connection(self):
         return redis.Redis(connection_pool=self.connection_pool)
 
     @handle_redis_errors
-    def set_string_value(self, key, value, expire_time=None):
+    def set(self, key, value, expire_time=None):
         redis_conn = self._get_connection()
         if redis_conn:
             redis_conn.set(key, value)
@@ -43,14 +46,14 @@ class RedisHandler:
                 redis_conn.expire(key, expire_time)
 
     @handle_redis_errors
-    def get_string_value(self, key):
+    def get(self, key):
         redis_conn = self._get_connection()
         if redis_conn:
             result = redis_conn.get(key)
-            return result.decode('utf-8') if result else None
+            return result if result else None
 
     @handle_redis_errors
-    def delete_string_key(self, key):
+    def delete(self, key):
         redis_conn = self._get_connection()
         if redis_conn:
             redis_conn.delete(key)
@@ -66,7 +69,7 @@ class RedisHandler:
         redis_conn = self._get_connection()
         if redis_conn:
             result = redis_conn.hget(hash_name, field)
-            return result.decode('utf-8') if result else None
+            return result if result else None
 
     @handle_redis_errors
     def delete_hash_field(self, hash_name, field):
@@ -78,8 +81,7 @@ class RedisHandler:
     def hgetall(self, hash_name):
         redis_conn = self._get_connection()
         if redis_conn:
-            result = redis_conn.hgetall(hash_name)
-            return result
+            return redis_conn.hgetall(hash_name)
             # return {k.decode('utf-8'): v.decode('utf-8') for k, v in result.items()} if result else None
 
     @handle_redis_errors
@@ -87,7 +89,7 @@ class RedisHandler:
         redis_conn = self._get_connection()
         if redis_conn:
             result = redis_conn.hmget(hash_name, fields)
-            return [item.decode('utf-8') if item else None for item in result] if result else None
+            return [item if item else None for item in result] if result else None
 
     @handle_redis_errors
     def hmset(self, hash_name, mapping):
@@ -106,7 +108,7 @@ class RedisHandler:
         redis_conn = self._get_connection()
         if redis_conn:
             result = redis_conn.rpop(list_name)
-            return result.decode('utf-8') if result else None
+            return result if result else None
 
     @handle_redis_errors
     def add_to_set(self, set_name, value):
@@ -131,7 +133,7 @@ class RedisHandler:
         redis_conn = self._get_connection()
         if redis_conn:
             result = redis_conn.zrange(zset_name, start, end)
-            return [item.decode('utf-8') for item in result] if result else None
+            return [item for item in result] if result else None
 
     @handle_redis_errors
     def remove_from_sorted_set(self, zset_name, value):
@@ -146,12 +148,12 @@ if __name__ == "__main__":
     redis_handler = RedisHandler(host='localhost', port=6379, db=0, max_connections=5)
 
     # 操作字符串
-    redis_handler.set_string_value('string_key', 'string_value', expire_time=60)
-    string_result = redis_handler.get_string_value('string_key')
+    redis_handler.set('string_key', 'string_value', expire_time=60)
+    string_result = redis_handler.get('string_key')
     print(f"String value: {string_result}")
 
     # 删除字符串键值对
-    redis_handler.delete_string_key('string_key')
+    redis_handler.delete('string_key')
 
     # 操作哈希
     redis_handler.set_hash_value('hash_name', 'field1', 'value1')

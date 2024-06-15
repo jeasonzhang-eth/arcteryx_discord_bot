@@ -17,35 +17,38 @@ def get_mapping_according_to_filter(url, rh):
     response = requests.request("GET", url, headers=headers, data=payload)
 
     # print(response.text)
+    if response.status_code == 200:
+        data = response.json()
+        item_list = data['universes']['universe'][1]['items-section']['items']['item']
+        print(len(item_list))
 
-    data = response.json()
-    item_list = data['universes']['universe'][1]['items-section']['items']['item']
-    sku_num_list = []
-    link_list = []
-    # print(item_list)
-    for item in item_list:
-        # url_params = item['link'][0]['url-params']
-        item_attribute_list = item['attribute']
+        return True
+        sku_num_list = []
+        link_list = []
+        # print(item_list)
+        for item in item_list:
+            # url_params = item['link'][0]['url-params']
+            item_attribute_list = item['attribute']
 
-        for index, item_attribute in enumerate(item_attribute_list):
-            if item_attribute['name'] == 'slug':
-                slug = item_attribute['value'][0]['value']
-                link = 'https://arcteryx.com/us/en/shop/' + slug
-                print(link)
-                link_list.append(link)
-            if item_attribute['name'] == 'secondid' and index == 0:
-                sku_num = item_attribute['value'][0]['value']
-                sku_num_list.append(sku_num)
-                print(sku_num)
+            for index, item_attribute in enumerate(item_attribute_list):
+                if item_attribute['name'] == 'slug':
+                    slug = item_attribute['value'][0]['value']
+                    link = 'https://arcteryx.com/us/en/shop/' + slug
+                    # print(link)
+                    link_list.append(link)
+                if item_attribute['name'] == 'secondid' and index == 0:
+                    sku_num = item_attribute['value'][0]['value']
+                    sku_num_list.append(sku_num)
+                    # print(sku_num)
 
-    for link, sku_num in zip(link_list, sku_num_list):
-        rh.set_hash_value("link_sku_mapping", link, sku_num)
+        # for link, sku_num in zip(link_list, sku_num_list):
+        #     rh.set_hash_value("link_sku_mapping", link, sku_num)
 
-    data_df = pd.DataFrame({
-        'sku_num': sku_num_list,
-        'link': link_list
-    })
-    data_df.to_csv('sku_mapping.csv')
+        data_df = pd.DataFrame({
+            'sku_num': sku_num_list,
+            'link': link_list
+        })
+        data_df.to_csv('sku_mapping.csv')
 
 
 def main():

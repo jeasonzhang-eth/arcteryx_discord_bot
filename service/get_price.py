@@ -47,7 +47,6 @@ for item in item_list:
     for variant in variants_list:
         variant_sku = variant['product']['sku']
         variant_quantity = variant['product']['quantity_available']
-
         item_slug_list.append(slug)
         item_sku_list.append(sku)
         item_variant_sku_list.append(variant_sku)
